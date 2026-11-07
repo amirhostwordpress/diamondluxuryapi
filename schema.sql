@@ -51,36 +51,57 @@ INSERT IGNORE INTO agents (name, role, email, phone, bio, image_url) VALUES
 
 -- ── Properties ────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS properties (
-  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  slug            VARCHAR(255) NOT NULL UNIQUE,
-  title           VARCHAR(255) NOT NULL,
-  listing_type    ENUM('sale','rent','off-plan') NOT NULL DEFAULT 'sale',
-  status          ENUM('active','sold','rented','draft') NOT NULL DEFAULT 'active',
-  price           DECIMAL(15,2) NOT NULL DEFAULT 0,
-  price_sqft      DECIMAL(10,2) NOT NULL DEFAULT 0,
-  sqft            INT UNSIGNED  NOT NULL DEFAULT 0,
-  beds            TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  baths           TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  parking         TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  highlights      VARCHAR(500) NOT NULL DEFAULT '',
-  location        VARCHAR(255) NOT NULL DEFAULT '',
-  community       VARCHAR(255) NOT NULL DEFAULT '',
-  developer       VARCHAR(255),
-  completion_date VARCHAR(50),
-  description     LONGTEXT,
+  id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  slug                VARCHAR(255) NOT NULL UNIQUE,
+  -- Core identity
+  title               VARCHAR(255) NOT NULL,
+  sub_title           VARCHAR(255) NOT NULL DEFAULT '',   -- project / building name shown below h1
+  ref                 VARCHAR(80)  NOT NULL DEFAULT '',   -- internal ref, e.g. DLR-2024-1001
+  listing_type        ENUM('sale','rent','off-plan') NOT NULL DEFAULT 'sale',
+  status              ENUM('active','sold','rented','draft') NOT NULL DEFAULT 'active',
+  -- Pricing
+  price               DECIMAL(15,2) NOT NULL DEFAULT 0,
+  price_sqft          DECIMAL(10,2) NOT NULL DEFAULT 0,
+  price_note          VARCHAR(255) NOT NULL DEFAULT '',   -- e.g. "No Commission · Motivated Seller"
+  -- Specs
+  sqft                INT UNSIGNED  NOT NULL DEFAULT 0,
+  beds                TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  baths               TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  parking             TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  property_type       VARCHAR(80)  NOT NULL DEFAULT '',   -- Apartment | Villa | Penthouse | etc.
+  furnishing          VARCHAR(80)  NOT NULL DEFAULT '',   -- Fully Furnished | Unfurnished | etc.
+  floor               VARCHAR(80)  NOT NULL DEFAULT '',   -- e.g. "Floor 12" or "Ground + 2"
+  view                VARCHAR(120) NOT NULL DEFAULT '',   -- e.g. "Beachfront / Sea View"
+  -- Location
+  highlights          VARCHAR(500) NOT NULL DEFAULT '',   -- single-line teaser (used in cards)
+  location            VARCHAR(255) NOT NULL DEFAULT '',   -- full address string
+  unit_detail         VARCHAR(255) NOT NULL DEFAULT '',   -- e.g. "Floor 12, Unit 4B"
+  community           VARCHAR(255) NOT NULL DEFAULT '',
+  developer           VARCHAR(255),
+  completion_date     VARCHAR(50),
+  -- Rich content (JSON arrays stored as JSON)
+  description         LONGTEXT,                           -- markdown / HTML paragraphs
+  highlights_list     JSON,                               -- ["Highlight 1","Highlight 2",...]
+  project_description JSON,                               -- ["Para 1","Para 2",...]
+  amenities           JSON,                               -- [{"icon":"pool","label":"Swimming Pool"},...]
+  -- Location extras
+  map_src             VARCHAR(1000),                      -- Google Maps embed src URL
+  map_label           VARCHAR(255),                       -- pin label text
+  -- Media
   -- Stored as JSON array of URLs, e.g. ["https://cdn.../img1.jpg","https://..."]
-  images          JSON,
-  brochure_url    VARCHAR(500),
-  video_url       VARCHAR(500),
-  agent_id        INT UNSIGNED,
-  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  images              JSON,
+  brochure_url        VARCHAR(500),
+  video_url           VARCHAR(500),
+  agent_id            INT UNSIGNED,
+  created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE SET NULL,
-  INDEX idx_listing_type (listing_type),
-  INDEX idx_status       (status),
-  INDEX idx_community    (community),
-  INDEX idx_beds         (beds),
-  INDEX idx_price        (price)
+  INDEX idx_listing_type  (listing_type),
+  INDEX idx_status        (status),
+  INDEX idx_community     (community),
+  INDEX idx_beds          (beds),
+  INDEX idx_price         (price),
+  INDEX idx_property_type (property_type)
 ) ENGINE=InnoDB;
 
 -- ── Enquiries ─────────────────────────────────────────────────────────────────
