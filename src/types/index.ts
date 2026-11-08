@@ -99,6 +99,10 @@ export interface NewsArticle {
 // ── Off-Plan Project ──────────────────────────────────────────────────────────
 export type OffPlanTag = "NEW LAUNCH" | "SELLING FAST" | "EXCLUSIVE" | "LIMITED UNITS" | "COMING SOON";
 
+export interface OffPlanAmenity   { icon: string; label: string; }
+export interface OffPlanFloorPlan { type: string; sqft: string; image_url: string; }
+export interface OffPlanNearby    { icon: string; label: string; time: string; }
+
 export interface OffPlanProject {
   id: number;
   slug: string;
@@ -106,15 +110,24 @@ export interface OffPlanProject {
   developer: string;
   location: string;
   community: string | null;
-  completion: string;        // e.g. "Q4 2027"
-  price_from: number;        // raw AED
-  beds: string;              // e.g. "3 – 6 BR"
+  completion: string;           // e.g. "Q4 2027"
+  price_from: number;           // raw AED
+  beds: string;                 // e.g. "3 – 6 BR"
   image_url: string | null;
   brochure_url: string | null;
   tag: OffPlanTag;
   description: string | null;
   is_active: boolean;
   created_at: string;
+  // ── Extended detail-page fields (v2) ─────────────────────────────────
+  property_type:        string | null;            // e.g. "Apartments & Townhouses"
+  payment_booking:      number;                   // %
+  payment_construction: number;                   // %
+  payment_handover:     number;                   // %
+  amenities:            OffPlanAmenity[]  | null;
+  floor_plans:          OffPlanFloorPlan[] | null;
+  gallery_images:       string[]          | null; // extra image URLs
+  nearby_places:        OffPlanNearby[]   | null;
 }
 
 // ── Admin User ────────────────────────────────────────────────────────────────

@@ -7,6 +7,40 @@ import type { OffPlanProject } from "../types";
 
 export const offPlanRouter = Router();
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Serialise a value to a JSON string for storage, or null if empty/undefined. */
+function toJson(v: unknown): string | null {
+  if (v == null) return null;
+  if (typeof v === "string") {
+    const s = v.trim();
+    if (s === "" || s === "null" || s === "[]") return null;
+    return s; // already a JSON string from the client
+  }
+  if (Array.isArray(v)) return v.length ? JSON.stringify(v) : null;
+  return JSON.stringify(v);
+}
+
+/** Parse a JSON column that MySQL may return as a string or already-parsed value. */
+function fromJson<T>(v: unknown): T | null {
+  if (v == null) return null;
+  if (typeof v === "string") {
+    try { return JSON.parse(v) as T; } catch { return null; }
+  }
+  return v as T;
+}
+
+/** Hydrate JSON columns on a row returned from MySQL. */
+function hydrate(row: Record<string, unknown>): OffPlanProject {
+  return {
+    ...row,
+    amenities:     fromJson(row.amenities),
+    floor_plans:   fromJson(row.floor_plans),
+    gallery_images: fromJson(row.gallery_images),
+    nearby_places: fromJson(row.nearby_places),
+  } as OffPlanProject;
+}
+
 // ── GET /api/off-plan — paginated list (public) ───────────────────────────────
 offPlanRouter.get("/", async (req, res) => {
   try {
@@ -29,13 +63,13 @@ offPlanRouter.get("/", async (req, res) => {
     );
     const total = totalRows[0]?.total ?? 0;
 
-    const items = await query<OffPlanProject>(
+    const rows = await query<Record<string, unknown>>(
       `SELECT * FROM off_plan_projects ${where}
        ORDER BY created_at DESC LIMIT ? OFFSET ?`,
       [...params, pageSize, offset]
     );
 
-    return ok(res, { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) });
+    return ok(res, { items: rows.map(hydrate), total, page, pageSize, totalPages: Math.ceil(total / pageSize) });
   } catch (error) {
     return serverError(res, "GET /api/off-plan", error);
   }
@@ -49,6 +83,11 @@ offPlanRouter.post("/", requireAuth, async (req, res) => {
       slug, title, developer, location, community, completion,
       price_from, beds, image_url, brochure_url, tag = "NEW LAUNCH",
       description, is_active = true,
+      property_type,
+      payment_booking      = 10,
+      payment_construction = 70,
+      payment_handover     = 20,
+      amenities, floor_plans, gallery_images, nearby_places,
     } = body;
 
     if (!slug || !title || !developer || !location || !completion || !price_from) {
@@ -58,13 +97,23 @@ offPlanRouter.post("/", requireAuth, async (req, res) => {
     const result = await execute(
       `INSERT INTO off_plan_projects
          (slug, title, developer, location, community, completion, price_from,
-          beds, image_url, brochure_url, tag, description, is_active)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+          beds, image_url, brochure_url, tag, description, is_active,
+          property_type, payment_booking, payment_construction, payment_handover,
+          amenities, floor_plans, gallery_images, nearby_places)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         slug, title, developer, location, community ?? null,
         completion, price_from, beds ?? "", image_url ?? null,
         brochure_url ?? null, tag, description ?? null,
         is_active ? 1 : 0,
+        property_type ?? null,
+        Number(payment_booking),
+        Number(payment_construction),
+        Number(payment_handover),
+        toJson(amenities),
+        toJson(floor_plans),
+        toJson(gallery_images),
+        toJson(nearby_places),
       ]
     );
 
@@ -81,13 +130,13 @@ offPlanRouter.get("/:id", async (req, res) => {
     const id = req.params.id as string;
     const isNumeric = /^\d+$/.test(id);
 
-    const row = await queryOne<OffPlanProject>(
+    const row = await queryOne<Record<string, unknown>>(
       `SELECT * FROM off_plan_projects WHERE ${isNumeric ? "id = ?" : "slug = ?"} LIMIT 1`,
       [isNumeric ? parseInt(id, 10) : id]
     );
 
     if (!row) return fail(res, "Not found.", 404);
-    return ok(res, row);
+    return ok(res, hydrate(row));
   } catch (error) {
     return serverError(res, "GET /api/off-plan/:id", error);
   }
@@ -101,23 +150,34 @@ offPlanRouter.put("/:id", requireAuth, async (req, res) => {
     const {
       slug, title, developer, location, community, completion,
       price_from, beds, image_url, brochure_url, tag, description, is_active,
+      property_type,
+      payment_booking, payment_construction, payment_handover,
+      amenities, floor_plans, gallery_images, nearby_places,
     } = body;
 
     await execute(
       `UPDATE off_plan_projects SET
-         slug         = COALESCE(?, slug),
-         title        = COALESCE(?, title),
-         developer    = COALESCE(?, developer),
-         location     = COALESCE(?, location),
-         community    = COALESCE(?, community),
-         completion   = COALESCE(?, completion),
-         price_from   = COALESCE(?, price_from),
-         beds         = COALESCE(?, beds),
-         image_url    = COALESCE(?, image_url),
-         brochure_url = COALESCE(?, brochure_url),
-         tag          = COALESCE(?, tag),
-         description  = COALESCE(?, description),
-         is_active    = COALESCE(?, is_active)
+         slug                 = COALESCE(?, slug),
+         title                = COALESCE(?, title),
+         developer            = COALESCE(?, developer),
+         location             = COALESCE(?, location),
+         community            = COALESCE(?, community),
+         completion           = COALESCE(?, completion),
+         price_from           = COALESCE(?, price_from),
+         beds                 = COALESCE(?, beds),
+         image_url            = COALESCE(?, image_url),
+         brochure_url         = COALESCE(?, brochure_url),
+         tag                  = COALESCE(?, tag),
+         description          = COALESCE(?, description),
+         is_active            = COALESCE(?, is_active),
+         property_type        = COALESCE(?, property_type),
+         payment_booking      = COALESCE(?, payment_booking),
+         payment_construction = COALESCE(?, payment_construction),
+         payment_handover     = COALESCE(?, payment_handover),
+         amenities            = COALESCE(?, amenities),
+         floor_plans          = COALESCE(?, floor_plans),
+         gallery_images       = COALESCE(?, gallery_images),
+         nearby_places        = COALESCE(?, nearby_places)
        WHERE id = ?`,
       [
         slug ?? null, title ?? null, developer ?? null, location ?? null,
@@ -125,6 +185,14 @@ offPlanRouter.put("/:id", requireAuth, async (req, res) => {
         beds ?? null, image_url ?? null, brochure_url ?? null,
         tag ?? null, description ?? null,
         is_active !== undefined ? (is_active ? 1 : 0) : null,
+        property_type !== undefined ? (property_type ?? null) : null,
+        payment_booking      != null ? Number(payment_booking)      : null,
+        payment_construction != null ? Number(payment_construction) : null,
+        payment_handover     != null ? Number(payment_handover)     : null,
+        amenities      !== undefined ? toJson(amenities)      : null,
+        floor_plans    !== undefined ? toJson(floor_plans)    : null,
+        gallery_images !== undefined ? toJson(gallery_images) : null,
+        nearby_places  !== undefined ? toJson(nearby_places)  : null,
         id,
       ]
     );
@@ -135,7 +203,7 @@ offPlanRouter.put("/:id", requireAuth, async (req, res) => {
   }
 });
 
-// ── DELETE /api/off-plan/:id — hard delete (admin) ─────────────────────────────
+// ── DELETE /api/off-plan/:id — hard delete (admin) ────────────────────────────
 offPlanRouter.delete("/:id", requireAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);

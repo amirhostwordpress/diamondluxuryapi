@@ -152,9 +152,30 @@ CREATE TABLE IF NOT EXISTS off_plan_projects (
   is_active     TINYINT(1) NOT NULL DEFAULT 1,
   created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  -- Extended detail-page fields (added v2)
+  property_type        VARCHAR(255),          -- e.g. "Apartments & Townhouses"
+  payment_booking      TINYINT UNSIGNED NOT NULL DEFAULT 10,   -- % on booking
+  payment_construction TINYINT UNSIGNED NOT NULL DEFAULT 70,   -- % during construction
+  payment_handover     TINYINT UNSIGNED NOT NULL DEFAULT 20,   -- % on handover
+  amenities            JSON,    -- [{icon, label}, ...]
+  floor_plans          JSON,    -- [{type, sqft, image_url}, ...]
+  gallery_images       JSON,    -- [url, url, ...]   (additional images beyond image_url)
+  nearby_places        JSON,    -- [{icon, label, time}, ...]
   INDEX idx_developer (developer),
   INDEX idx_active    (is_active)
 ) ENGINE=InnoDB;
+
+-- ── Migration: add extended off-plan columns if they don't exist yet ──────────
+-- Safe to run on an existing DB; ALTER IGNORE skips if column already present.
+ALTER TABLE off_plan_projects
+  ADD COLUMN IF NOT EXISTS property_type        VARCHAR(255)      DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS payment_booking      TINYINT UNSIGNED  NOT NULL DEFAULT 10,
+  ADD COLUMN IF NOT EXISTS payment_construction TINYINT UNSIGNED  NOT NULL DEFAULT 70,
+  ADD COLUMN IF NOT EXISTS payment_handover     TINYINT UNSIGNED  NOT NULL DEFAULT 20,
+  ADD COLUMN IF NOT EXISTS amenities            JSON              DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS floor_plans          JSON              DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS gallery_images       JSON              DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS nearby_places        JSON              DEFAULT NULL;
 
 -- ── File uploads (audit log for FTP uploads) ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS uploaded_files (
