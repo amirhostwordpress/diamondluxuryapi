@@ -20,6 +20,7 @@ import { offPlanRouter } from "./routes/offPlan";
 import { propertiesRouter } from "./routes/properties";
 import { uploadRouter } from "./routes/upload";
 import { settingsRouter } from "./routes/settings";
+import { developersRouter } from "./routes/developers";
 
 const app = express();
 
@@ -73,6 +74,7 @@ app.use("/api/off-plan", offPlanRouter);
 app.use("/api/properties", propertiesRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/settings", settingsRouter);
+app.use("/api/developers", developersRouter);
 
 // ── 404 (JSON) ─────────────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

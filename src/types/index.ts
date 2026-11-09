@@ -147,6 +147,18 @@ export interface SiteSetting {
   updated_at: string;
 }
 
+// ── Developer Partner ─────────────────────────────────────────────────────────
+export interface Developer {
+  id: number;
+  name: string;
+  logo_url: string;
+  website_url: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // ── Pagination ────────────────────────────────────────────────────────────────
 export interface PaginatedResult<T> {
   items: T[];

@@ -213,6 +213,34 @@ ALTER TABLE off_plan_projects
   ADD COLUMN IF NOT EXISTS gallery_images       JSON              DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS nearby_places        JSON              DEFAULT NULL;
 
+-- ── Developer Partners ───────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS developers (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(255) NOT NULL,
+  logo_url      VARCHAR(500) NOT NULL DEFAULT '',
+  website_url   VARCHAR(500) NOT NULL DEFAULT '',
+  display_order SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  is_active     TINYINT(1) NOT NULL DEFAULT 1,
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_active_order (is_active, display_order)
+) ENGINE=InnoDB;
+
+INSERT IGNORE INTO developers (name, logo_url, website_url, display_order) VALUES
+  ('EMAAR Properties',     '/emaar.png',              'https://www.emaar.com',          1),
+  ('DAMAC Properties',     '/damac.webp',             'https://www.damacproperties.com', 2),
+  ('Nakheel',              '/nakheel.webp',           'https://www.nakheel.com',         3),
+  ('Meraas',               '/meraas.png',             'https://www.meraas.com',          4),
+  ('Sobha Realty',         '/sobha.png',              'https://www.sobharealty.com',     5),
+  ('Meydan Group',         '/meydan.png',             'https://www.meydan.ae',           6),
+  ('Ellington Properties', '/ellington.png',          'https://www.ellingtonproperties.com', 7),
+  ('Danube Properties',    '/danube properties.png',  'https://www.danubeproperties.com', 8),
+  ('Dubai Holdings',       '/dubai holdings.png',     'https://www.dubaiholdings.com',   9),
+  ('Dubai South',          '/dubai south.png',        'https://www.dubaisouth.ae',       10),
+  ('NSHAMA',               '/nshma.png',              'https://www.nshama.ae',           11),
+  ('Select Group',         '/select group.png',       'https://www.selectgroup.ae',      12),
+  ('Shapoorji Pallonji',   '/shapoorji.png',          'https://www.shapoorjipallonji.ae', 13);
+
 -- ── File uploads (audit log for FTP uploads) ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS uploaded_files (
   id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
