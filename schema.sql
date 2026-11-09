@@ -54,22 +54,40 @@ CREATE TABLE IF NOT EXISTS properties (
   id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   slug            VARCHAR(255) NOT NULL UNIQUE,
   title           VARCHAR(255) NOT NULL,
+  sub_title       VARCHAR(255) NOT NULL DEFAULT '',  -- project/building name shown below main title
+  ref             VARCHAR(80)  NOT NULL DEFAULT '',  -- internal reference, e.g. DLR-2024-1001
   listing_type    ENUM('sale','rent','off-plan') NOT NULL DEFAULT 'sale',
   status          ENUM('active','sold','rented','draft') NOT NULL DEFAULT 'active',
+  -- Pricing
   price           DECIMAL(15,2) NOT NULL DEFAULT 0,
   price_sqft      DECIMAL(10,2) NOT NULL DEFAULT 0,
+  price_note      VARCHAR(255) NOT NULL DEFAULT '',  -- e.g. "No Commission · Motivated Seller"
+  -- Specs
   sqft            INT UNSIGNED  NOT NULL DEFAULT 0,
   beds            TINYINT UNSIGNED NOT NULL DEFAULT 0,
   baths           TINYINT UNSIGNED NOT NULL DEFAULT 0,
   parking         TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  highlights      VARCHAR(500) NOT NULL DEFAULT '',
+  property_type   VARCHAR(80)  NOT NULL DEFAULT '',  -- Apartment | Villa | Penthouse | etc.
+  furnishing      VARCHAR(80)  NOT NULL DEFAULT '',  -- Fully Furnished | Semi Furnished | Unfurnished
+  floor           VARCHAR(80)  NOT NULL DEFAULT '',  -- e.g. "Floor 12" or "Ground + 2"
+  view            VARCHAR(255) NOT NULL DEFAULT '',  -- e.g. "Beachfront / Sea View"
+  -- Location
+  highlights      VARCHAR(500) NOT NULL DEFAULT '',  -- one-liner used in listing cards
   location        VARCHAR(255) NOT NULL DEFAULT '',
+  unit_detail     VARCHAR(255) NOT NULL DEFAULT '',  -- e.g. "Floor 12, Unit 4B"
   community       VARCHAR(255) NOT NULL DEFAULT '',
   developer       VARCHAR(255),
   completion_date VARCHAR(50),
+  -- Rich content (JSON arrays)
   description     LONGTEXT,
-  -- Stored as JSON array of URLs, e.g. ["https://cdn.../img1.jpg","https://..."]
-  images          JSON,
+  highlights_list JSON,         -- ["bullet 1", "bullet 2", ...]
+  project_description JSON,     -- ["paragraph 1", "paragraph 2", ...]
+  amenities       JSON,         -- [{icon, label}, ...]
+  -- Map
+  map_src         VARCHAR(1000) NOT NULL DEFAULT '', -- Google Maps embed src URL
+  map_label       VARCHAR(255)  NOT NULL DEFAULT '', -- pin overlay label text
+  -- Media
+  images          JSON,         -- ["https://cdn.../img1.jpg", ...]
   brochure_url    VARCHAR(500),
   video_url       VARCHAR(500),
   agent_id        INT UNSIGNED,
@@ -82,6 +100,24 @@ CREATE TABLE IF NOT EXISTS properties (
   INDEX idx_beds         (beds),
   INDEX idx_price        (price)
 ) ENGINE=InnoDB;
+
+-- ── Migration: add extended property columns if they don't exist yet ──────────
+-- Safe to run on an existing DB; ADD COLUMN IF NOT EXISTS skips if already present.
+ALTER TABLE properties
+  ADD COLUMN IF NOT EXISTS sub_title          VARCHAR(255)  NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS ref                VARCHAR(80)   NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS price_sqft         DECIMAL(10,2) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS price_note         VARCHAR(255)  NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS property_type      VARCHAR(80)   NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS furnishing         VARCHAR(80)   NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS floor              VARCHAR(80)   NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS view               VARCHAR(255)  NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS unit_detail        VARCHAR(255)  NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS highlights_list    JSON          DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS project_description JSON         DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS amenities          JSON          DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS map_src            VARCHAR(1000) NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS map_label          VARCHAR(255)  NOT NULL DEFAULT '';
 
 -- ── Enquiries ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS enquiries (

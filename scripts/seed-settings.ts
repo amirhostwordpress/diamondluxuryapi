@@ -30,7 +30,6 @@ const DEFAULTS: [string, string, string][] = [
   // ── social ──
   ["social_facebook", "https://www.facebook.com/share/p/1EqxQytivk/", "social"],
   ["social_instagram", "https://www.instagram.com/p/DfUebNpu_T8/", "social"],
-  ["social_x", "https://x.com", "social"],
   ["social_linkedin", "https://lnkd.in/p/ddXRTszT", "social"],
   // ── about ──
   ["about_hero_eyebrow", "DIAMOND LUXURY REAL ESTATE", "about"],
