@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS agents (
   id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name       VARCHAR(120) NOT NULL,
   role       VARCHAR(120) NOT NULL,
-  email      VARCHAR(255) NOT NULL UNIQUE,
+  email      VARCHAR(255) NOT NULL,
   phone      VARCHAR(50)  NOT NULL DEFAULT '',
   bio        TEXT,
   image_url  VARCHAR(500),

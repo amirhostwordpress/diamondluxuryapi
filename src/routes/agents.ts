@@ -2,7 +2,7 @@
 import { Router } from "express";
 import { query, queryOne, execute } from "../lib/db";
 import { requireAuth } from "../lib/auth";
-import { ok, created, fail, serverError, isDuplicate } from "../lib/http";
+import { ok, created, fail, serverError } from "../lib/http";
 import type { Agent } from "../types";
 
 export const agentsRouter = Router();
@@ -28,9 +28,6 @@ agentsRouter.post("/", requireAuth, async (req, res) => {
     if (!name?.trim() || !role?.trim() || !email?.trim()) {
       return fail(res, "name, role and email are required.");
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return fail(res, "Invalid email.");
-    }
 
     const result = await execute(
       `INSERT INTO agents (name, role, email, phone, bio, image_url, is_active)
@@ -44,7 +41,6 @@ agentsRouter.post("/", requireAuth, async (req, res) => {
 
     return created(res, { id: result.insertId }, "Agent created.");
   } catch (error) {
-    if (isDuplicate(error)) return fail(res, "Email already exists.", 409);
     return serverError(res, "POST /api/agents", error);
   }
 });
