@@ -468,3 +468,41 @@ INSERT IGNORE INTO site_settings (setting_key, value, section) VALUES
   ('offplan_cta_eyebrow',       'GET EARLY ACCESS', 'offplan'),
   ('offplan_cta_title',         'Register for Exclusive Off-Plan Launches', 'offplan'),
   ('offplan_cta_body',          'Be first in line for the best units and pre-launch pricing on Dubai''s newest developments.', 'offplan');
+
+-- ── About section — verified admin-managed content ────────────────────────────
+-- Adds the previously hardcoded copy for the About page sub-page cards, the
+-- Company Profile numbers strip, the Mission & Vision value cards and the
+-- Our Team CEO message.
+INSERT IGNORE INTO site_settings (setting_key, value, section) VALUES
+  -- about — sub-page cards
+  ('about_card1_title', 'Company Profile', 'about'),
+  ('about_card1_body',  'Discover our story, key milestones, and the core values that define everything we do as Dubai''s leading luxury real estate brokerage.', 'about'),
+  ('about_card2_title', 'Mission & Vision', 'about'),
+  ('about_card2_body',  'Understand the purpose and ambition that guide us — our commitment to excellence, integrity, and redefining luxury living in Dubai.', 'about'),
+  ('about_card3_title', 'Our Team', 'about'),
+  ('about_card3_body',  'Meet the multilingual professionals behind Diamond — each bringing deep market knowledge and a genuine passion for exceptional client service.', 'about'),
+  -- company — numbers strip
+  ('company_number_val',   '50+', 'company'),
+  ('company_number_label', 'Exclusive Developers', 'company'),
+  -- mission — value cards
+  ('mission_value1_title', 'Integrity', 'mission'),
+  ('mission_value1_body',  'We put your interests first — always transparent, always honest.', 'mission'),
+  ('mission_value2_title', 'Expertise', 'mission'),
+  ('mission_value2_body',  'In-depth knowledge of Dubai''s dynamic property market, delivered with professionalism.', 'mission'),
+  ('mission_value3_title', 'Client-First', 'mission'),
+  ('mission_value3_body',  'A client-first approach that strives to exceed expectations and create lasting value.', 'mission'),
+  ('mission_value4_title', 'Innovation', 'mission'),
+  ('mission_value4_body',  'We embrace innovation to deliver extraordinary real estate experiences.', 'mission'),
+  -- team — CEO message
+  ('team_ceo_eyebrow',     'MESSAGE FROM OUR CEO', 'team'),
+  ('team_ceo_title_lead',  'A Word from', 'team'),
+  ('team_ceo_title_em',    'Our Leadership', 'team'),
+  ('team_ceo_p1',          'Dubai is one of the world''s most dynamic and attractive real estate destinations, offering exceptional opportunities for homeowners and international investors. Our mission is to make every property journey smooth, rewarding, and memorable by providing expert guidance, personalised solutions, and professional services.', 'team'),
+  ('team_ceo_p2',          'At Diamond Luxury Real Estate, we place our clients at the heart of everything we do. Whether you are looking to buy your dream home, sell a property, rent a luxury residence, or explore profitable investment opportunities, our experienced team is committed to helping you make confident and informed decisions.', 'team'),
+  ('team_ceo_p3',          'We strongly believe that long-term success is built on honesty, integrity, professionalism, and lasting relationships. Our goal is not simply to complete transactions but to become your trusted real estate partner for years to come.', 'team'),
+  ('team_ceo_p4',          'Thank you for your trust and confidence in Diamond Luxury Real Estate. We look forward to helping you discover exceptional opportunities in Dubai''s prestigious property market.', 'team'),
+  ('team_ceo_warm',        'Warm Regards,', 'team'),
+  ('team_ceo_name',        'ANUPAM MISHRA', 'team'),
+  ('team_ceo_designation', 'CEO — Diamond Luxury Real Estate', 'team'),
+  ('team_ceo_email',       'info@diamondluxuryrealestate.ae', 'team'),
+  ('team_ceo_phone',       '+971 56 396 4810', 'team');
