@@ -65,9 +65,27 @@ function requireSecret(key: string, devFallback: string): string {
   return val;
 }
 
+// Some hosts (e.g. Render) can bake surrounding quotes/backticks or stray
+// whitespace into an env value. Left as-is, a value like `8h` or "8h" makes
+// jsonwebtoken throw at sign time ("expiresIn" should be a number of seconds
+// or string representing a timespan), turning every login into a 500.
+// Normalise to a bare timespan (8h / 30m / 7d) or plain seconds, else fall back.
+function cleanTimespan(raw: string, fallback: string): string {
+  const cleaned = raw.trim().replace(/^[`'"]+|[`'"]+$/g, "").trim();
+  if (/^\d+$/.test(cleaned) || /^\d+(\.\d+)?\s*(ms|s|m|h|d|w|y)$/i.test(cleaned)) {
+    return cleaned;
+  }
+  if (cleaned) {
+    console.warn(
+      `[config] JWT_EXPIRES_IN value ${JSON.stringify(raw)} is not a valid timespan; using "${fallback}".`
+    );
+  }
+  return fallback;
+}
+
 export const jwtConfig = {
   secret:    requireSecret("JWT_SECRET", "change-me-in-development-only"),
-  expiresIn: optional("JWT_EXPIRES_IN", "8h"),
+  expiresIn: cleanTimespan(optional("JWT_EXPIRES_IN", "8h"), "8h"),
 };
 
 // ── App / Frontend ────────────────────────────────────────────────────────────
