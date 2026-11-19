@@ -19,8 +19,8 @@ const DEFAULTS: [string, string, string][] = [
   ["stats_support", "50+", "home"],
   ["stats_support_label", "Exclusive Developers", "home"],
   // ── contact ──
-  ["contact_phone", "+971 56 396 4810", "contact"],
-  ["contact_phone_2", "+971 55 896 2985", "contact"],
+  ["contact_phone", "+971 55 896 2985", "contact"],
+  // ["contact_phone_2", "+971 55 896 2985", "contact"],
   ["contact_email", "info@diamondluxuryrealestate.ae", "contact"],
   ["contact_address", "27th Floor, Office: 2705 / 10 Marina Plaza, Dubai Marina.", "contact"],
   ["contact_hours", "Mon – Sat: 9:00 am – 7:00 pm", "contact"],
