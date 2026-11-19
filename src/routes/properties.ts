@@ -84,13 +84,14 @@ function toJsonCol(v: unknown): string | null {
 // ── GET /api/properties — filtered + paginated list (public) ──────────────────
 propertiesRouter.get("/", async (req, res) => {
   try {
-    const listingType = qp(req.query.type);        // sale | rent | off-plan
-    const status      = qp(req.query.status);       // active | sold | rented | draft
-    const community   = qp(req.query.community);
-    const developer   = qp(req.query.developer);
-    const beds        = qpInt(req.query.beds);
-    const minPrice    = qp(req.query.minPrice);
-    const maxPrice    = qp(req.query.maxPrice);
+    const listingType  = qp(req.query.type);        // sale | rent | off-plan
+    const status       = qp(req.query.status);       // active | sold | rented | draft
+    const community    = qp(req.query.community);
+    const developer    = qp(req.query.developer);
+    const propertyType = qp(req.query.propertyType);
+    const beds         = qpInt(req.query.beds);
+    const minPrice     = qp(req.query.minPrice);
+    const maxPrice     = qp(req.query.maxPrice);
     const page        = Math.max(1, qpInt(req.query.page, 1) ?? 1);
     const pageSize    = Math.min(50, Math.max(1, qpInt(req.query.pageSize, 12) ?? 12));
     const offset      = (page - 1) * pageSize;
@@ -102,8 +103,9 @@ propertiesRouter.get("/", async (req, res) => {
     // Default to active only for public listing
     if (status)      { conditions.push("p.status = ?");       params.push(status); }
     else             { conditions.push("p.status = 'active'"); }
-    if (community)   { conditions.push("p.community LIKE ?"); params.push(`%${community}%`); }
-    if (developer)   { conditions.push("p.developer LIKE ?"); params.push(`%${developer}%`); }
+    if (community)   { conditions.push("p.community LIKE ?");     params.push(`%${community}%`); }
+    if (developer)   { conditions.push("p.developer LIKE ?");     params.push(`%${developer}%`); }
+    if (propertyType){ conditions.push("p.property_type LIKE ?"); params.push(`%${propertyType}%`); }
     if (beds !== null) { conditions.push("p.beds = ?");       params.push(beds); }
     if (minPrice)    { conditions.push("p.price >= ?");       params.push(parseFloat(minPrice)); }
     if (maxPrice)    { conditions.push("p.price <= ?");       params.push(parseFloat(maxPrice)); }

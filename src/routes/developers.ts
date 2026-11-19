@@ -1,17 +1,18 @@
 // Developers — list (public) + full CRUD (admin)
 import { Router } from "express";
 import { query, queryOne, execute } from "../lib/db";
-import { requireAuth } from "../lib/auth";
+import { requireAuth, optionalAuth } from "../lib/auth";
 import { ok, created, fail, serverError, qp, qpInt } from "../lib/http";
 import type { Developer } from "../types";
 
 export const developersRouter = Router();
 
 // ── GET /api/developers — list active developers ordered by display_order (public) ──
-developersRouter.get("/", async (req, res) => {
+developersRouter.get("/", optionalAuth, async (req, res) => {
   try {
     // Admin flag returns all (including inactive); public returns active only.
-    const isAdmin   = qp(req.query._admin) === "1";
+    // The flag alone is not enough — a valid admin token is required.
+    const isAdmin   = qp(req.query._admin) === "1" && !!req.user;
     const pageSize  = Math.min(100, Math.max(1, qpInt(req.query.pageSize, 50) ?? 50));
     const page      = Math.max(1, qpInt(req.query.page, 1) ?? 1);
     const offset    = (page - 1) * pageSize;

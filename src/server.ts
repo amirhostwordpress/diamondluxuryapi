@@ -21,6 +21,7 @@ import { propertiesRouter } from "./routes/properties";
 import { uploadRouter } from "./routes/upload";
 import { settingsRouter } from "./routes/settings";
 import { developersRouter } from "./routes/developers";
+import { createRateLimiter } from "./lib/rateLimit";
 
 const app = express();
 
@@ -62,14 +63,19 @@ app.get("/api/health", (_req: Request, res: Response) => {
   });
 });
 
+// ── Rate limiting for public write endpoints ──────────────────────────────────
+// Throttle spammy public POSTs (contact form, enquiries, newsletter signups).
+// Only non-GET requests are counted, so admin reads stay unaffected.
+const publicWriteLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter); // -> /api/admin/stats
 app.use("/api/agents", agentsRouter);
-app.use("/api/contact", contactRouter);
-app.use("/api/enquiries", enquiriesRouter);
+app.use("/api/contact", publicWriteLimiter, contactRouter);
+app.use("/api/enquiries", publicWriteLimiter, enquiriesRouter);
 app.use("/api/news", newsRouter);
-app.use("/api/newsletter", newsletterRouter);
+app.use("/api/newsletter", publicWriteLimiter, newsletterRouter);
 app.use("/api/off-plan", offPlanRouter);
 app.use("/api/properties", propertiesRouter);
 app.use("/api/upload", uploadRouter);
