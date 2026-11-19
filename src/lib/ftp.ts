@@ -43,6 +43,12 @@ function localPublicBase(): string {
   return "http://localhost:4000/uploads";
 }
 
+// Public base of the FTP host that serves the mirrored copies
+// (e.g. https://luxurydiamond.amirhost.in/uploads).
+function ftpPublicBase(): string {
+  return (process.env.FTP_PUBLIC_URL || "").replace(/\/$/, "");
+}
+
 /**
  * Save a file buffer to the local filesystem.
  *
@@ -113,24 +119,32 @@ export async function mirrorToFtp(
 /**
  * Primary upload entry-point.
  *
- * 1. Saves the file to the local filesystem (always — this is the source of truth).
- * 2. Mirrors to FTP in the background (non-blocking, failure is non-fatal).
+ * 1. Saves the file to the local filesystem (keeps the /uploads rewrite working).
+ * 2. Mirrors it to the FTP host and **waits**, because the FTP copy is the
+ *    durable one — the URL we return and persist must resolve immediately.
  *
- * Returns immediately after the local write.
+ * When the mirror is unconfigured or fails, the backend-served local URL is
+ * returned instead, so uploads never hard-fail.
  */
 export async function uploadToFtp(
   buffer: Buffer,
   originalName: string,
   category: UploadCategory = "misc"
 ): Promise<UploadResult> {
-  // 1. Local save (primary, synchronous)
-  const { localPath, storedName, publicUrl } = await saveLocally(buffer, originalName, category);
+  // 1. Local save (synchronous)
+  const { localPath, storedName, publicUrl: localUrl } = await saveLocally(
+    buffer,
+    originalName,
+    category
+  );
 
-  // 2. FTP mirror (secondary, fire-and-forget)
-  let ftpPath = "";
-  mirrorToFtp(buffer, storedName, category)
-    .then((p) => { ftpPath = p; })
-    .catch(() => { /* already logged inside mirrorToFtp */ });
+  // 2. FTP mirror (awaited)
+  const ftpPath = await mirrorToFtp(buffer, storedName, category);
+  const ftpBase = ftpPublicBase();
+
+  // Prefer the FTP host's public URL; fall back to the backend-served one.
+  const publicUrl =
+    ftpPath && ftpBase ? `${ftpBase}/${category}/${storedName}` : localUrl;
 
   return { publicUrl, ftpPath, storedName, localPath };
 }
