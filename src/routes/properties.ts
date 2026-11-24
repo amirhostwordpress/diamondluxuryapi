@@ -89,6 +89,7 @@ propertiesRouter.get("/", async (req, res) => {
     const community    = qp(req.query.community);
     const developer    = qp(req.query.developer);
     const propertyType = qp(req.query.propertyType);
+    const search       = qp(req.query.search);       // free-text: title, community, location
     const beds         = qpInt(req.query.beds);
     const minPrice     = qp(req.query.minPrice);
     const maxPrice     = qp(req.query.maxPrice);
@@ -109,6 +110,10 @@ propertiesRouter.get("/", async (req, res) => {
     if (beds !== null) { conditions.push("p.beds = ?");       params.push(beds); }
     if (minPrice)    { conditions.push("p.price >= ?");       params.push(parseFloat(minPrice)); }
     if (maxPrice)    { conditions.push("p.price <= ?");       params.push(parseFloat(maxPrice)); }
+    if (search) {
+      conditions.push("(p.title LIKE ? OR p.community LIKE ? OR p.location LIKE ? OR p.slug LIKE ?)");
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
 
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
