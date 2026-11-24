@@ -204,8 +204,8 @@ propertiesRouter.post("/", requireAuth, async (req, res) => {
         toJsonCol(project_description),
         toJsonCol(amenities),
         map_src ?? null, map_label ?? null,
-        JSON.stringify(images),
-        brochure_url ?? null, video_url ?? null, agent_id ?? null,
+        toJsonCol(images),
+        brochure_url ?? null, video_url ?? null, agent_id || null,
       ]
     );
 
@@ -334,10 +334,10 @@ propertiesRouter.put("/:id", requireAuth, async (req, res) => {
         amenities           !== undefined ? toJsonCol(amenities)           : null,
         map_src    ?? null,
         map_label  ?? null,
-        images !== undefined ? JSON.stringify(images) : null,
+        images !== undefined ? toJsonCol(images) : null,
         brochure_url ?? null,
         video_url    ?? null,
-        agent_id     ?? null,
+        agent_id !== undefined ? (agent_id || null) : null,
         id,
       ]
     );

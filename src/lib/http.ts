@@ -19,7 +19,10 @@ export function fail(res: Response, error: string, status = 400): Response {
 
 export function serverError(res: Response, label: string, error: unknown): Response {
   console.error(`[${label}]`, error);
-  return res.status(500).json({ success: false, error: "Server error." });
+  const detail = process.env.NODE_ENV !== "production"
+    ? (error instanceof Error ? error.message : String(error))
+    : "Server error.";
+  return res.status(500).json({ success: false, error: detail });
 }
 
 /** True for a mysql2 duplicate-key error. */
