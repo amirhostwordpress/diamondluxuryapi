@@ -47,6 +47,7 @@ interface DbPropertyRow {
   highlights_list: string | string[];   // JSON array of bullet strings
   project_description: string | string[]; // JSON array of paragraph strings
   amenities: string | Record<string, string>[]; // JSON array of {icon, label}
+  nearby_places: string | Record<string, string>[] | null; // JSON array of {cat, icon, name, dist}
   // Location extras
   map_src: string | null;
   map_label: string | null;
@@ -154,7 +155,8 @@ propertiesRouter.get("/", async (req, res) => {
       images:              parseImages(r.images),
       highlights_list:     parseJson<string[]>(r.highlights_list)     ?? [],
       project_description: parseJson<string[]>(r.project_description) ?? [],
-      amenities:           parseJson<Record<string, string>[]>(r.amenities) ?? [],
+      amenities:           parseJson<Record<string, string>[]>(r.amenities)      ?? [],
+      nearby_places:       parseJson<Record<string, string>[]>(r.nearby_places)  ?? [],
     }));
 
     return ok(res, {
@@ -182,7 +184,7 @@ propertiesRouter.post("/", requireAuth, async (req, res) => {
       plot_sqft, price_sqft_plot, available_from = "",
       highlights = "", location = "", unit_detail = "", community = "",
       developer, completion_date,
-      description, highlights_list, project_description, amenities,
+      description, highlights_list, project_description, amenities, nearby_places,
       map_src, map_label,
       images = [], brochure_url, video_url, agent_id,
     } = body;
@@ -200,10 +202,10 @@ propertiesRouter.post("/", requireAuth, async (req, res) => {
           beds_label, baths_label, sqft_label,
           plot_sqft, price_sqft_plot, available_from,
           highlights, location, unit_detail, community, developer, completion_date,
-          description, highlights_list, project_description, amenities,
+          description, highlights_list, project_description, amenities, nearby_places,
           map_src, map_label,
           images, brochure_url, video_url, agent_id)
-       VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?, ?,?,?,?)`,
+       VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?,?)`,
       [
         slug, title, sub_title, ref, listing_type, status,
         price, price_sqft ?? 0, price_note,
@@ -216,6 +218,7 @@ propertiesRouter.post("/", requireAuth, async (req, res) => {
         toJsonCol(highlights_list),
         toJsonCol(project_description),
         toJsonCol(amenities),
+        toJsonCol(nearby_places),
         map_src ?? null, map_label ?? null,
         toJsonCol(images),
         brochure_url ?? null, video_url ?? null, agent_id || null,
@@ -256,7 +259,8 @@ propertiesRouter.get("/:id", async (req, res) => {
       images:              parseImages(row.images),
       highlights_list:     parseJson<string[]>(row.highlights_list)     ?? [],
       project_description: parseJson<string[]>(row.project_description) ?? [],
-      amenities:           parseJson<Record<string, string>[]>(row.amenities) ?? [],
+      amenities:           parseJson<Record<string, string>[]>(row.amenities)     ?? [],
+      nearby_places:       parseJson<Record<string, string>[]>(row.nearby_places) ?? [],
     };
     return ok(res, property);
   } catch (error) {
@@ -278,7 +282,7 @@ propertiesRouter.put("/:id", requireAuth, async (req, res) => {
       plot_sqft, price_sqft_plot, available_from,
       highlights, location, unit_detail, community, developer,
       completion_date, description,
-      highlights_list, project_description, amenities,
+      highlights_list, project_description, amenities, nearby_places,
       map_src, map_label,
       images, brochure_url, video_url, agent_id,
     } = body;
@@ -318,6 +322,7 @@ propertiesRouter.put("/:id", requireAuth, async (req, res) => {
          highlights_list     = COALESCE(?, highlights_list),
          project_description = COALESCE(?, project_description),
          amenities           = COALESCE(?, amenities),
+         nearby_places       = COALESCE(?, nearby_places),
          map_src             = COALESCE(?, map_src),
          map_label           = COALESCE(?, map_label),
          images              = COALESCE(?, images),
@@ -359,6 +364,7 @@ propertiesRouter.put("/:id", requireAuth, async (req, res) => {
         highlights_list     !== undefined ? toJsonCol(highlights_list)     : null,
         project_description !== undefined ? toJsonCol(project_description) : null,
         amenities           !== undefined ? toJsonCol(amenities)           : null,
+        nearby_places       !== undefined ? toJsonCol(nearby_places)       : null,
         map_src    ?? null,
         map_label  ?? null,
         images !== undefined ? toJsonCol(images) : null,

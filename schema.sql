@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS properties (
   highlights_list JSON,         -- ["bullet 1", "bullet 2", ...]
   project_description JSON,     -- ["paragraph 1", "paragraph 2", ...]
   amenities       JSON,         -- [{icon, label}, ...]
+  nearby_places   JSON,         -- [{cat, icon, name, dist}, ...]
   -- Map
   map_src         VARCHAR(1000) NOT NULL DEFAULT '', -- Google Maps embed src URL
   map_label       VARCHAR(255)  NOT NULL DEFAULT '', -- pin overlay label text
@@ -123,7 +124,8 @@ ALTER TABLE properties
   ADD COLUMN IF NOT EXISTS sqft_label         VARCHAR(80)   NOT NULL DEFAULT '',  -- e.g. "7,335 ft²"
   ADD COLUMN IF NOT EXISTS plot_sqft          INT UNSIGNED  NOT NULL DEFAULT 0,   -- plot/land area in sqft
   ADD COLUMN IF NOT EXISTS price_sqft_plot    DECIMAL(10,2) NOT NULL DEFAULT 0,   -- AED per sqft (plot)
-  ADD COLUMN IF NOT EXISTS available_from     VARCHAR(50)   NOT NULL DEFAULT '';  -- e.g. "12 Nov 2026"
+  ADD COLUMN IF NOT EXISTS available_from     VARCHAR(50)   NOT NULL DEFAULT '',  -- e.g. "12 Nov 2026"
+  ADD COLUMN IF NOT EXISTS nearby_places     JSON          DEFAULT NULL;          -- [{cat,icon,name,dist}, ...]
 
 -- ── Enquiries ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS enquiries (
