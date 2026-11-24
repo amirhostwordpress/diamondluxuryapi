@@ -28,6 +28,13 @@ interface DbPropertyRow {
   furnishing: string;
   floor: string;
   view: string;
+  // Spec text labels (free-form, e.g. "5 Beds + Maid", "7,335 ft²")
+  beds_label: string;
+  baths_label: string;
+  sqft_label: string;
+  plot_sqft: number;
+  price_sqft_plot: number;
+  available_from: string;
   // Location
   highlights: string;
   location: string;
@@ -171,6 +178,8 @@ propertiesRouter.post("/", requireAuth, async (req, res) => {
       price, price_sqft, price_note = "",
       sqft, beds, baths, parking,
       property_type = "", furnishing = "", floor = "", view = "",
+      beds_label = "", baths_label = "", sqft_label = "",
+      plot_sqft, price_sqft_plot, available_from = "",
       highlights = "", location = "", unit_detail = "", community = "",
       developer, completion_date,
       description, highlights_list, project_description, amenities,
@@ -188,16 +197,20 @@ propertiesRouter.post("/", requireAuth, async (req, res) => {
           price, price_sqft, price_note,
           sqft, beds, baths, parking,
           property_type, furnishing, floor, view,
+          beds_label, baths_label, sqft_label,
+          plot_sqft, price_sqft_plot, available_from,
           highlights, location, unit_detail, community, developer, completion_date,
           description, highlights_list, project_description, amenities,
           map_src, map_label,
           images, brochure_url, video_url, agent_id)
-       VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?,?, ?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?, ?,?,?,?)`,
+       VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?, ?,?,?,?)`,
       [
         slug, title, sub_title, ref, listing_type, status,
         price, price_sqft ?? 0, price_note,
         sqft ?? 0, beds ?? 0, baths ?? 0, parking ?? 0,
         property_type, furnishing, floor, view,
+        beds_label, baths_label, sqft_label,
+        plot_sqft ?? 0, price_sqft_plot ?? 0, available_from,
         highlights, location, unit_detail, community, developer ?? null, completion_date ?? null,
         description ?? null,
         toJsonCol(highlights_list),
@@ -261,6 +274,8 @@ propertiesRouter.put("/:id", requireAuth, async (req, res) => {
       price, price_sqft, price_note,
       sqft, beds, baths, parking,
       property_type, furnishing, floor, view,
+      beds_label, baths_label, sqft_label,
+      plot_sqft, price_sqft_plot, available_from,
       highlights, location, unit_detail, community, developer,
       completion_date, description,
       highlights_list, project_description, amenities,
@@ -287,6 +302,12 @@ propertiesRouter.put("/:id", requireAuth, async (req, res) => {
          furnishing          = COALESCE(?, furnishing),
          floor               = COALESCE(?, floor),
          view                = COALESCE(?, view),
+         beds_label          = COALESCE(?, beds_label),
+         baths_label         = COALESCE(?, baths_label),
+         sqft_label          = COALESCE(?, sqft_label),
+         plot_sqft           = COALESCE(?, plot_sqft),
+         price_sqft_plot     = COALESCE(?, price_sqft_plot),
+         available_from      = COALESCE(?, available_from),
          highlights          = COALESCE(?, highlights),
          location            = COALESCE(?, location),
          unit_detail         = COALESCE(?, unit_detail),
@@ -322,6 +343,12 @@ propertiesRouter.put("/:id", requireAuth, async (req, res) => {
         furnishing   ?? null,
         floor        ?? null,
         view         ?? null,
+        beds_label       ?? null,
+        baths_label      ?? null,
+        sqft_label       ?? null,
+        plot_sqft        ?? null,
+        price_sqft_plot  ?? null,
+        available_from   ?? null,
         highlights   ?? null,
         location     ?? null,
         unit_detail  ?? null,

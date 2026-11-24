@@ -18,6 +18,12 @@ export interface Property {
   beds: number;
   baths: number;
   parking: number;
+  beds_label: string;      // e.g. "5 Beds + Maid"
+  baths_label: string;     // e.g. "6 Baths"
+  sqft_label: string;      // e.g. "7,335 ft²"
+  plot_sqft: number;
+  price_sqft_plot: number;
+  available_from: string;  // e.g. "12 Nov 2026"
   highlights: string;      // comma-separated
   location: string;
   community: string;

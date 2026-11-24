@@ -117,7 +117,13 @@ ALTER TABLE properties
   ADD COLUMN IF NOT EXISTS project_description JSON         DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS amenities          JSON          DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS map_src            VARCHAR(1000) NOT NULL DEFAULT '',
-  ADD COLUMN IF NOT EXISTS map_label          VARCHAR(255)  NOT NULL DEFAULT '';
+  ADD COLUMN IF NOT EXISTS map_label          VARCHAR(255)  NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS beds_label         VARCHAR(80)   NOT NULL DEFAULT '',  -- e.g. "5 Beds + Maid"
+  ADD COLUMN IF NOT EXISTS baths_label        VARCHAR(80)   NOT NULL DEFAULT '',  -- e.g. "6 Baths"
+  ADD COLUMN IF NOT EXISTS sqft_label         VARCHAR(80)   NOT NULL DEFAULT '',  -- e.g. "7,335 ft²"
+  ADD COLUMN IF NOT EXISTS plot_sqft          INT UNSIGNED  NOT NULL DEFAULT 0,   -- plot/land area in sqft
+  ADD COLUMN IF NOT EXISTS price_sqft_plot    DECIMAL(10,2) NOT NULL DEFAULT 0,   -- AED per sqft (plot)
+  ADD COLUMN IF NOT EXISTS available_from     VARCHAR(50)   NOT NULL DEFAULT '';  -- e.g. "12 Nov 2026"
 
 -- ── Enquiries ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS enquiries (
