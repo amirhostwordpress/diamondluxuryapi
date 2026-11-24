@@ -50,6 +50,15 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
+// GET /api/auth/me — returns the authenticated admin's basic info.
+// Used by the frontend to re-hydrate sessionStorage after a tab restore
+// (sessionStorage is cleared when the tab is closed, but the httpOnly cookie
+// persists for its full maxAge, so the user shouldn't have to log in again).
+authRouter.get("/me", requireAuth, (req, res) => {
+  const { sub, username, email } = req.user!;
+  return ok(res, { id: sub, username, email });
+});
+
 // POST /api/auth/logout
 authRouter.post("/logout", (_req, res) => {
   clearAuthCookie(res);
