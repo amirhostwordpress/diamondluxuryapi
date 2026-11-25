@@ -89,6 +89,40 @@ function toJsonCol(v: unknown): string | null {
   return JSON.stringify(v);
 }
 
+// ── GET /api/properties/filter-options — distinct values for search dropdowns ──
+propertiesRouter.get("/filter-options", async (_req, res) => {
+  try {
+    const [communities, propertyTypes, developers] = await Promise.all([
+      query<{ value: string }>(
+        `SELECT DISTINCT community AS value
+         FROM properties
+         WHERE status = 'active' AND community IS NOT NULL AND community <> ''
+         ORDER BY community ASC`
+      ),
+      query<{ value: string }>(
+        `SELECT DISTINCT property_type AS value
+         FROM properties
+         WHERE status = 'active' AND property_type IS NOT NULL AND property_type <> ''
+         ORDER BY property_type ASC`
+      ),
+      query<{ value: string }>(
+        `SELECT DISTINCT developer AS value
+         FROM properties
+         WHERE status = 'active' AND developer IS NOT NULL AND developer <> ''
+         ORDER BY developer ASC`
+      ),
+    ]);
+
+    return ok(res, {
+      communities:   communities.map((r) => r.value),
+      propertyTypes: propertyTypes.map((r) => r.value),
+      developers:    developers.map((r) => r.value),
+    });
+  } catch (error) {
+    return serverError(res, "GET /api/properties/filter-options", error);
+  }
+});
+
 // ── GET /api/properties — filtered + paginated list (public) ──────────────────
 propertiesRouter.get("/", async (req, res) => {
   try {
